@@ -1,0 +1,17 @@
+body{
+    background-color: #E1E1E1;
+}
+#enterfield{
+    background-color: white;
+    width: 100%;
+}
+#titledesc{
+    margin-top: 0%;
+    margin-bottom: 5%;
+}
+#title{
+    margin-top: 10%;
+}
+.spaceout{
+    margin-bottom: 3%;
+}
