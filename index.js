@@ -3,6 +3,7 @@ const app = express();
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
+const path = require("path");
 /* HTTPS SERVER
 var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
 var certificate = fs.readFileSync('/path/to/franciskim.co.crt', 'utf8');
@@ -26,9 +27,10 @@ app.get("/", function(req, res) {
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/login.html");
 });
-app.use(express.static("css"));
+
 
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
+app.use(express.static(path.join(__dirname, "/public")));
 //Generate event code.
 function genEventCode() {
   return (
