@@ -22,7 +22,7 @@ httpsServer.listen(1337);
 HTTPS SERVER */
 
 app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/attendance.html");
+  res.sendFile(__dirname + "/index.html");
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/login.html");
