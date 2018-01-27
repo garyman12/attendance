@@ -28,7 +28,6 @@ app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/login.html");
 });
 
-
 app.listen(3000, () => console.log("Example app listening on port 3000!"));
 app.use(express.static(path.join(__dirname, "/public")));
 //Generate event code.
