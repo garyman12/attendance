@@ -1,13 +1,37 @@
 <html>
     <head>
-        <title>Admin Login Page</title>
+        <title>Mentor Login</title>
         <!-- Bootstrap -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <!-- Other Resources -->
+        <link rel="stylesheet" type="text/css" href="public/css/login.css">
     </head>
     <body>
-
-
+        <div class='container'>
+            <div class='row'>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4">
+                    <center><h1 id='title'>Attendance Panel</h1></center>
+                    <center><h3 id='titledesc'>Sign for the Dashboard</h3></center>
+                    <div id='login'>
+                        <div id='enterfield'>
+                            <br>
+                            <p>Username:</p>
+                            <input type="text" class='textinput' name="username" placeholder="">
+                            <p style='margin-top: 2%;'>Password:</p>
+                            <input type="text" class='textinput' name="password" placeholder="">
+                            <label>
+                                <input type="checkbox" value="">
+                                Remember me
+                            </label>
+                            <button class='spaceout' style='margin: 5%;' onclick'submitInfo()'>Submit</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+            </div>
+        </div>
     </body>
 </html>
