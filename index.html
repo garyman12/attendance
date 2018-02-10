@@ -6,25 +6,32 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <!-- Other Resources -->
-        <link rel="stylesheet" type="text/css" href="css/attendance.css">
+        <link rel="stylesheet" type="text/css" href="/css/login.css">
     </head>
     <body>
-        <div class="col-sm-4">
-
-        </div>
-        <div class="col-sm-4">
-            <center><h1 id='title'>Attendance</h1></center>
-            <center><h3 id='titledesc'>Sign in Here</h3></center>
-            <div id='enterfield'>
-                    <center><p class='spaceout'>Name:</p>
-                    <input type="text" name="Name" class='spaceout' placeholder="Ex. John Smith">
-                    <p class='spaceout'>Code:</p>
-                    <input type="text" name="Code" class='spaceout' placeholder="Ex. 1234-abcd"> <br>
-                    <button class='spaceout' onclick'submitInfo()'>Submit</button></center>
+        <div class='container'>
+            <div class='row'>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4">
+                    <center><h1 id='title'>Attendance</h1></center>
+                    <center><h3 id='titledesc'>Sign in Here</h3></center>
+                    <div id='login'>
+                        <div id='enterfield'>
+                            <br>
+                            <p>Name:</p>
+                            <input type="text" class='textinput' name="Name" placeholder="Ex. John Smith">
+                            <p style='margin-top: 2%;'>Code:</p>
+                            <input type="text" class='textinput' name="Code" placeholder="Ex. 1234-abcd">
+                            <label>
+                                <input type="checkbox" value="">
+                                Remember me
+                            </label>
+                            <button class='spaceout' style='margin: 5%;' onclick'submitInfo()'>Submit</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
             </div>
-        </div>
-        <div class="col-sm-4">
-
         </div>
     </body>
 </html>
