@@ -33,7 +33,6 @@ app.use(express.static(path.join(__dirname, "/public")));
 //Generate event code.
 function genEventCode() {
   return (
-    "CD_" +
     Math.random()
       .toString(36)
       .substr(2, 4) +
