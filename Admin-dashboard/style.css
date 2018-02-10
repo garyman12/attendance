@@ -36,3 +36,16 @@
   .sidebar .nav-link {
     border-radius: 0;
   }
+
+  /*
+   * Main Page
+  */
+
+.headcount{
+    text-align: center;
+}
+.amt{
+    background-color: #F2F2F2;
+    border-style: solid;
+    border-color: #DEE2E6;
+}
