@@ -120,7 +120,7 @@ STEP 4: DONE */
         console.log("GOTCHU FAM, TIME TO AUTH YOU IN YO");
         req.session.GithubID = ParsedID;
         req.session.Authorized = true;
-        return res.redirect("../AdminDashboard");
+        return res.redirect("../success");
       } else {
         return res.redirect("../login");
       }
@@ -131,7 +131,9 @@ STEP 4: DONE */
 });
 
 app.get("/success", (req, res) => {
-  res.send("");
+  setTimeout(function() {
+    res.redirect("../AdminDashboard");
+  }, 1500);
 });
 app.get("/authTest", auth, (req, res) => {
   res.send("U in boy");
@@ -164,17 +166,16 @@ function auth(req, res, next) {
   }
 }
 
+//SQL COMMANDS: WILL MOVE TO A DIFFERENT FILE LATER
 function startSequlizeConnection() {
   sequelize
     .authenticate()
     .then(() => {
-      console.log("Sequlize Connection Established");
+      console.log("Sequlize Connection Established (YAY!)");
     })
     .catch(err => {
       console.error(
-        "Unable to connect to the Database, server threw Error: ",
-        err
+        "Unable to connect to the Database, server threw Error: " + err
       );
     });
 }
-//SQL COMMANDS: WILL MOVE TO A DIFFERENT FILE LATER
