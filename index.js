@@ -5,7 +5,10 @@ const http = require("http");
 const https = require("https");
 const path = require("path");
 const simpleOauthModule = require("simple-oauth2");
+var request = require("request");
+var session = require("express-session");
 require("dotenv").config();
+
 /* HTTPS SERVER
 var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
 var certificate = fs.readFileSync('/path/to/franciskim.co.crt', 'utf8');
@@ -32,6 +35,13 @@ app.get("/login", function(req, res) {
 
 app.listen(3000, () => console.log("App open on port 3000"));
 app.use(express.static(path.join(__dirname, "/public")));
+app.use(
+  session({
+    secret: process.env.SESSIONSECRET,
+    resave: true,
+    saveUninitialized: true
+  })
+);
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
 const oauth2 = simpleOauthModule.create({
   client: {
@@ -47,8 +57,8 @@ const oauth2 = simpleOauthModule.create({
 
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
   redirect_uri: "http://localhost:3000/callback",
-  scope: "notifications",
-  state: "3(#0/!~"
+  scope: "read:user",
+  state: process.env.STATESTRING
 });
 
 // Initial page redirecting to Github
@@ -69,11 +79,37 @@ app.get("/callback", (req, res) => {
       console.error("Access Token Error", error.message);
       return res.json("Authentication failed");
     }
+    console.log(result);
 
-    console.log("The resulting token: ", result);
+    //console.log("The resulting token: ", result);
+    console.log(result["access_token"]);
+    var RequestString = "https://api.github.com/user"; // + result["access_token"];
+    console.log(RequestString);
+    var options = {
+      url: RequestString,
+      headers: {
+        "User-Agent": "CoderDojoToledoAttendance",
+        Authorization: "token " + result["access_token"]
+      }
+    };
+    request.get(options, function(error, response) {
+      if (error) throw error;
+
+      var Parsed = JSON.parse(response.body);
+      var ParsedID = Parsed["id"];
+      console.log(Parsed["id"]);
+
+      if (ParsedID == "29166546") {
+        console.log("GOTCHU FAM, TIME TO AUTH");
+        req.session.GithubID = ParsedID;
+        req.session.Authorized = true;
+        return res.redirect("../login");
+      } else {
+        return res.redirect("../login");
+      }
+    });
     const token = oauth2.accessToken.create(result);
-
-    return res.status(200).json(token);
+    // return res.status(200).json(token);
   });
 });
 
@@ -93,4 +129,9 @@ function genEventCode() {
       .toString(36)
       .substr(3, 4)
   );
+}
+
+function auth(req, res, next) {
+  if (req.session && req.session.Authorized === "true") return next();
+  else return res.sendStatus(401);
 }
