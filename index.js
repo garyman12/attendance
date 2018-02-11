@@ -120,7 +120,6 @@ app.get("/authTest", auth, (req, res) => {
   res.send("U in boy");
 });
 app.get("/AdminDashboard", auth, (req, res) => {
-  console.log(req.session.Authorized);
   res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
 });
 
@@ -144,6 +143,6 @@ function auth(req, res, next) {
     console.log("Authorized:" + req.session.GithubID);
     return next();
   } else {
-    return res.sendStatus(401);
+    return res.redirect("../login");
   }
 }
