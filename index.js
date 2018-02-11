@@ -103,7 +103,7 @@ app.get("/callback", (req, res) => {
         console.log("GOTCHU FAM, TIME TO AUTH");
         req.session.GithubID = ParsedID;
         req.session.Authorized = true;
-        return res.redirect("../login");
+        return res.redirect("../authTest");
       } else {
         return res.redirect("../login");
       }
@@ -115,6 +115,13 @@ app.get("/callback", (req, res) => {
 
 app.get("/success", (req, res) => {
   res.send("");
+});
+app.get("/authTest", auth, (req, res) => {
+  res.send("U in boy");
+});
+app.get("/AdminDashboard", auth, (req, res) => {
+  console.log(req.session.Authorized);
+  res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
 });
 
 //Generate event code.
@@ -132,6 +139,11 @@ function genEventCode() {
 }
 
 function auth(req, res, next) {
-  if (req.session && req.session.Authorized === "true") return next();
-  else return res.sendStatus(401);
+  console.log(req.session.Authorized);
+  if (req.session && req.session.Authorized == true) {
+    console.log("Authorized:" + req.session.GithubID);
+    return next();
+  } else {
+    return res.sendStatus(401);
+  }
 }
