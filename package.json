@@ -4,7 +4,7 @@
   "description": "Attendance tracking for CoderDojo Toledo.",
   "main": "index.js",
   "scripts": {
-    "run": "node index.js",
+    "test": "nodemon index",
     "style": "prettier-check \"./**/*.js\"",
     "lint": "eslint --ext .js \"./**/*.js\"",
     "validate": "npm-run-all --parallel style lint",
@@ -40,6 +40,7 @@
     "https": "^1.0.0",
     "mysql": "^2.15.0",
     "passport": "^0.4.0",
+    "nodemon": "^1.14.12",
     "path": "^0.12.7",
     "prettier": "^1.10.2",
     "prettier-check": "^2.0.0",
