@@ -7,6 +7,19 @@ const path = require("path");
 const simpleOauthModule = require("simple-oauth2");
 var request = require("request");
 var session = require("express-session");
+const Sequelize = require("sequelize");
+const sequelize = new Sequelize("ninjas", "root", "password", {
+  host: "localhost",
+  dialect: "mysql",
+
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
+});
+
 require("dotenv").config();
 
 /* HTTPS SERVER
@@ -81,7 +94,6 @@ app.get("/callback", (req, res) => {
     }
     console.log(result);
 
-    //console.log("The resulting token: ", result);
     console.log(result["access_token"]);
     var RequestString = "https://api.github.com/user"; // + result["access_token"];
     console.log(RequestString);
@@ -98,12 +110,17 @@ app.get("/callback", (req, res) => {
       var Parsed = JSON.parse(response.body);
       var ParsedID = Parsed["id"];
       console.log(Parsed["id"]);
-
+      /*THE AUTH PLAN: BY ADAM
+STEP 1: GET THE USERID OF THE GITHUB ACCOUNT USING THE OAUTH TOKEN
+STEP 2: COMPARE THE USERID TOKEN TO A MYSQL LIST OF TOKEN
+  IF THE TOKEN EXISTS, LOGIN, IF NOT, MAKE AN ACCOUNT
+STEP 3: SETUP RESTRICTIONS
+STEP 4: DONE */
       if (ParsedID == "29166546") {
-        console.log("GOTCHU FAM, TIME TO AUTH");
+        console.log("GOTCHU FAM, TIME TO AUTH YOU IN YO");
         req.session.GithubID = ParsedID;
         req.session.Authorized = true;
-        return res.redirect("../authTest");
+        return res.redirect("../AdminDashboard");
       } else {
         return res.redirect("../login");
       }
@@ -146,3 +163,18 @@ function auth(req, res, next) {
     return res.redirect("../login");
   }
 }
+
+function startSequlizeConnection() {
+  sequelize
+    .authenticate()
+    .then(() => {
+      console.log("Sequlize Connection Established");
+    })
+    .catch(err => {
+      console.error(
+        "Unable to connect to the Database, server threw Error: ",
+        err
+      );
+    });
+}
+//SQL COMMANDS: WILL MOVE TO A DIFFERENT FILE LATER
