@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const fs = require("fs");
@@ -8,19 +9,34 @@ const simpleOauthModule = require("simple-oauth2");
 var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize("ninjas", "root", "password", {
-  host: "localhost",
-  dialect: "mysql",
+const sequelize = new Sequelize(
+  "attendance",
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  {
+    host: "localhost",
+    dialect: "mysql",
 
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
   }
-});
+);
+// Adding Sequel Database
 
-require("dotenv").config();
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log(
+      "Connection to the database has been established successfully."
+    );
+  })
+  .catch(err => {
+    console.error("Unable to connect to the database:", err);
+  });
 
 /* HTTPS SERVER
 var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
@@ -39,13 +55,6 @@ var httpsServer = https.createServer(credentials, app);
 httpsServer.listen(1337);
 HTTPS SERVER */
 
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/index.html");
-});
-app.get("/login", function(req, res) {
-  res.sendFile(__dirname + "/login.html");
-});
-
 app.listen(3000, () => console.log("App open on port 3000"));
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(
@@ -55,6 +64,14 @@ app.use(
     saveUninitialized: true
   })
 );
+
+app.get("/", function(req, res) {
+  res.sendFile(__dirname + "/index.html");
+});
+app.get("/login", function(req, res) {
+  res.sendFile(__dirname + "/login.html");
+});
+
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
 const oauth2 = simpleOauthModule.create({
   client: {
