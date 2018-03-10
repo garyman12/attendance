@@ -1,5 +1,7 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
@@ -7,30 +9,137 @@ const path = require("path");
 const simpleOauthModule = require("simple-oauth2");
 var request = require("request");
 var session = require("express-session");
-const mysql = require("mysql2");
-require("dotenv").config();
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  database: "ninjas"
+const Sequelize = require("sequelize");
+const sequelize = new Sequelize(
+  "coderdojo",
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  {
+    host: "localhost",
+    dialect: "mysql",
+
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  }
+);
+//Creating sequelize database tables
+
+var attendance = sequelize.define("attendance", {
+  person_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  dojo_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  date: {
+    type: Sequelize.DATEONLY,
+    allowNull: true
+  }
 });
-
-/* HTTPS SERVER
-var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
-var certificate = fs.readFileSync('/path/to/franciskim.co.crt', 'utf8');
-var credentials = { key: privateKey, cert: certificate };
-
-// START --== Your App Code ==--
-app.get('/', function(req, res, next) {
-    res.json({
-        app: 'Foobar App'
-    });
+var dojo_person_xref = sequelize.define("dojo_person_xref", {
+  dojo_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  person_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  is_primary: {
+    type: Sequelize.CHAR(1),
+    allowNull: true
+  }
 });
-// END --== Your App Code ==--
+var dojo = sequelize.define("dojo", {
+  name: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  street_address: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  city: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  state: {
+    type: Sequelize.CHAR(2),
+    allowNull: true
+  },
+  zip: {
+    type: Sequelize.CHAR(5),
+    allowNull: true
+  }
+});
+var guardian_xref = sequelize.define("guardian_xref", {
+  person1: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  person2: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  relationship_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  }
+});
+var person = sequelize.define("person", {
+  fullname: {
+    type: Sequelize.STRING(32),
+    allowNull: true,
+    defaultValue: ""
+  },
+  role: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  email: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  slack_id: {
+    type: Sequelize.STRING(32),
+    allowNull: false,
+    defaultValue: ""
+  },
+  github_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  }
+});
+var relationship = sequelize.define("relationship", {
+  description: {
+    type: Sequelize.STRING(64),
+    allowNull: true
+  }
+});
+// Sync sequel Tables
+sequelize
+  .sync()
+  .then(function() {
+    console.log("Synced");
+  })
+  .catch(function(err) {
+    console.log(err, "Something went wack");
+  });
 
-var httpsServer = https.createServer(credentials, app);
-httpsServer.listen(1337);
-HTTPS SERVER */
+// Adding Sequel Database
+
+sequelize
+  .authenticate()
+  .then(() => {})
+  .catch(err => {
+    console.error("Unable to connect to the database:", err);
+  });
 
 app.listen(3000, () => console.log("App open on port 3000"));
 app.use(express.static(path.join(__dirname, "/public")));
@@ -41,12 +150,61 @@ app.use(
     saveUninitialized: true
   })
 );
+
+// Serving Files to user through server
+
 app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(__dirname + "/public/index.html");
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
 });
+app.get("/signup", function(req, res) {
+  res.sendFile(__dirname + "/public/makeuser.html");
+});
+
+// Form Input
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.use(function(req, res) {
+  var info = JSON.parse(JSON.stringify(req.body, null, 2));
+  console.log(JSON.stringify(req.body, null, 2));
+  createPerson(info);
+});
+
+person.destroy({ where: { fullname: "" } });
+
+// Creating user data and pushing to database
+function createPerson(info) {
+  person
+    .findOrCreate({
+      where: { github_id: info.github_id },
+      defaults: {
+        fullname: info.fullname,
+        role: info.role,
+        email: info.email,
+        slack_id: info.slack_id,
+        github_id: info.github_id
+      }
+    })
+    .spread((user, created) => {
+      console.log(
+        "Found/Created person with full name: " +
+          info.fullname +
+          ", role: " +
+          info.role +
+          ", email: " +
+          info.email +
+          ", Slack ID: " +
+          info.slack_id +
+          ", and Github Id: " +
+          info.github_id
+      );
+    });
+}
+
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
 const oauth2 = simpleOauthModule.create({
   client: {

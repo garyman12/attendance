@@ -8,8 +8,6 @@
     "style": "prettier-check \"./**/*.js\"",
     "lint": "eslint --ext .js \"./**/*.js\"",
     "validate": "npm-run-all --parallel style lint",
-    "prepush": "npm run validate",
-    "precommit": "npm run validate",
     "lintfix": "eslint --ext .js \"./**/*.js\" --fix",
     "prettierfix": "prettier --write \"./**/*.js\"",
     "fix": "npm-run-all prettierfix lintfix"
@@ -32,6 +30,7 @@
     "npm-run-all": "^4.1.2"
   },
   "dependencies": {
+    "body-parser": "^1.18.2",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
