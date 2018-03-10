@@ -1,0 +1,21 @@
+body{
+    background-color: #E1E1E1;
+}
+#title{
+    margin-top: 2%;
+}
+#section{
+    background-color: white;
+    width: 80%;
+    margin-left: 10%;
+    margin-top: 5%;
+    margin-bottom: 5%;
+
+    font-size: 18px;
+}
+#ifninja{
+    margin-left: 10%;
+}
+p{
+    margin-top: 5px;
+}

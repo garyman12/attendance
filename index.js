@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
@@ -10,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "attendance",
+  "coderdojo",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -25,15 +26,117 @@ const sequelize = new Sequelize(
     }
   }
 );
+//Creating sequelize database tables
+
+var attendance = sequelize.define("attendance", {
+  person_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  dojo_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  date: {
+    type: Sequelize.DATEONLY,
+    allowNull: true
+  }
+});
+var dojo_person_xref = sequelize.define("dojo_person_xref", {
+  dojo_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  person_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  is_primary: {
+    type: Sequelize.CHAR(1),
+    allowNull: true
+  }
+});
+var dojo = sequelize.define("dojo", {
+  name: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  street_address: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  city: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  state: {
+    type: Sequelize.CHAR(2),
+    allowNull: true
+  },
+  zip: {
+    type: Sequelize.CHAR(5),
+    allowNull: true
+  }
+});
+var guardian_xref = sequelize.define("guardian_xref", {
+  person1: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  person2: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  },
+  relationship_id: {
+    type: Sequelize.STRING(16),
+    allowNull: true
+  }
+});
+var person = sequelize.define("person", {
+  fullname: {
+    type: Sequelize.STRING(32),
+    allowNull: true,
+    defaultValue: ""
+  },
+  role: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  email: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  },
+  slack_id: {
+    type: Sequelize.STRING(32),
+    allowNull: false,
+    defaultValue: ""
+  },
+  github_id: {
+    type: Sequelize.STRING(32),
+    allowNull: true
+  }
+});
+var relationship = sequelize.define("relationship", {
+  description: {
+    type: Sequelize.STRING(64),
+    allowNull: true
+  }
+});
+// Sync sequel Tables
+sequelize
+  .sync()
+  .then(function() {
+    console.log("Synced");
+  })
+  .catch(function(err) {
+    console.log(err, "Something went wack");
+  });
+
 // Adding Sequel Database
 
 sequelize
   .authenticate()
-  .then(() => {
-    console.log(
-      "Connection to the database has been established successfully."
-    );
-  })
+  .then(() => {})
   .catch(err => {
     console.error("Unable to connect to the database:", err);
   });
@@ -64,12 +167,25 @@ app.use(
     saveUninitialized: true
   })
 );
+// Serving Files to user through server
 
 app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(__dirname + "/public/index.html");
 });
 app.get("/login", function(req, res) {
-  res.sendFile(__dirname + "/login.html");
+  res.sendFile(__dirname + "/public/login.html");
+});
+app.get("/signup", function(req, res) {
+  res.sendFile(__dirname + "/public/makeuser.html");
+});
+
+// Form Input
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.use(function(req, res) {
+  console.log(JSON.stringify(req.body, null, 2));
 });
 
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!

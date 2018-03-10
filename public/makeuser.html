@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <title>Submit for Attendance</title>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="/create.js"></script>
+        <!-- Other Resources -->
+        <link rel="stylesheet" type="text/css" href="/css/signup.css">
+    </head>
+    <body>
+        <div class='container'>
+            <div class='row'>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-6" id='section'>
+                    <center><h1 id='title'>Sign Up User</h1></center>
+
+                    <form action="/signup" method="post">
+                        <p>Full Name:</p>
+                        <input type="text"name="full_name">
+                        <p>Role:</p>
+                        <select name="role">
+                            <option value="guardian">Guardian</option>
+                            <option value="ninja">Ninja</option>
+                            <option value="mentor">Mentor</option>
+                            <option value="organizer">Organizer</option>
+                            <option value="lead">Lead</option>
+                        </select>
+                        <p>Email:</p>
+                        <input type="text" name="email">
+                        <p>Slack:</p>
+                        <input type="text" name="slack">
+                        <p>Github (optional):</p>
+                        <input type="text" name="github">
+                        <p>Primary Dojo:</p>
+                        <select name="primary_dojo">
+                            <option value="toledo">Toledo</option>
+                        </select>
+                        <div id='ifninja'>
+                            <h3>If you are a Ninja:</h3>
+                            <div class='row' id='row1'>
+                                <div class='col-sm-1'></div>
+                                <div class='col-sm-3'>
+                                    <p>Guardian 1's Name:</p>
+                                    <input type="text" name="guardian_1">
+                                    <p>Description of Relationship:</p>
+                                    <input type="text" name="guardian_1_desc">
+                                </div>
+                                <div class='col-sm-3'>
+                                    <p>Guardian 2's Name:</p>
+                                    <input type="text" name="guardian_2">
+                                    <p>Description of Relationship:</p>
+                                    <input type="text" name="guardian_2_desc">
+                                </div>
+                                <div class='col-sm-3' id='guardian3'>
+                                    <button onclick='addAnother()' style='margin-left: 5%;'>Add Another</button>
+                                </div>
+                            </div>
+                            <div class='row' id='row2' style='margin-top:5%;'></div>
+                            <div class='row' id='row3'></div>
+                        </div>
+                        <input type="submit">
+                    </form>
+
+                </div>
+                <div class="col-sm-3"></div>
+            </div>
+        </div>
+    </body>
+</html>
