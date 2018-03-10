@@ -141,23 +141,6 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-/* HTTPS SERVER
-var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
-var certificate = fs.readFileSync('/path/to/franciskim.co.crt', 'utf8');
-var credentials = { key: privateKey, cert: certificate };
-
-// START --== Your App Code ==--
-app.get('/', function(req, res, next) {
-    res.json({
-        app: 'Foobar App'
-    });
-});
-// END --== Your App Code ==--
-
-var httpsServer = https.createServer(credentials, app);
-httpsServer.listen(1337);
-HTTPS SERVER */
-
 app.listen(3000, () => console.log("App open on port 3000"));
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(
@@ -167,6 +150,7 @@ app.use(
     saveUninitialized: true
   })
 );
+
 // Serving Files to user through server
 
 app.get("/", function(req, res) {
@@ -185,8 +169,41 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(function(req, res) {
+  var info = JSON.parse(JSON.stringify(req.body, null, 2));
   console.log(JSON.stringify(req.body, null, 2));
+  createPerson(info);
 });
+
+person.destroy({ where: { fullname: "" } });
+
+// Creating user data and pushing to database
+function createPerson(info) {
+  person
+    .findOrCreate({
+      where: { github_id: info.github_id },
+      defaults: {
+        fullname: info.fullname,
+        role: info.role,
+        email: info.email,
+        slack_id: info.slack_id,
+        github_id: info.github_id
+      }
+    })
+    .spread((user, created) => {
+      console.log(
+        "Found/Created person with full name: " +
+          info.fullname +
+          ", role: " +
+          info.role +
+          ", email: " +
+          info.email +
+          ", Slack ID: " +
+          info.slack_id +
+          ", and Github Id: " +
+          info.github_id
+      );
+    });
+}
 
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
 const oauth2 = simpleOauthModule.create({

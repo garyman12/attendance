@@ -8,8 +8,6 @@
     "style": "prettier-check \"./**/*.js\"",
     "lint": "eslint --ext .js \"./**/*.js\"",
     "validate": "npm-run-all --parallel style lint",
-    "prepush": "npm run validate",
-    "precommit": "npm run validate",
     "lintfix": "eslint --ext .js \"./**/*.js\" --fix",
     "prettierfix": "prettier --write \"./**/*.js\"",
     "fix": "npm-run-all prettierfix lintfix"

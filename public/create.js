@@ -1,15 +1,13 @@
 var guardians = 2;
 var submitTemplateThree =
   "<p>Guardian 3's Name:</p><input type=\"text\" name=\"guardian_3\"><p>Description of Relationship:</p><input type=\"text\" name=\"guardian_3_desc\">";
-var buttonTemplate =
-  "<div class=\"col-sm-3\"><button onclick=\"addAnother()\" style=\"margin-left: 5%;\">Add Another</button></div>";
 
 function addAnother() {
   guardians++;
   var extraguardians = guardians + 1;
   if (guardians == 3) {
     document.getElementById("guardian3").innerHTML = submitTemplateThree;
-    buttonTemplate =
+    var buttonTemplate =
       "<div class=\"col-sm-3\" id=\"guardian" +
       extraguardians +
       "\"><button onclick=\"addAnother()\" style=\"margin-left: 5%;\">Add Another</button></div>";
