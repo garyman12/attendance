@@ -7,20 +7,13 @@ const path = require("path");
 const simpleOauthModule = require("simple-oauth2");
 var request = require("request");
 var session = require("express-session");
-const Sequelize = require("sequelize");
-const sequelize = new Sequelize("ninjas", "root", "password", {
-  host: "localhost",
-  dialect: "mysql",
-
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  }
-});
-
+const mysql = require("mysql2");
 require("dotenv").config();
+const connection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  database: "ninjas"
+});
 
 /* HTTPS SERVER
 var privateKey  = fs.readFileSync('/path/to/franciskim.co.key', 'utf8');
@@ -39,13 +32,6 @@ var httpsServer = https.createServer(credentials, app);
 httpsServer.listen(1337);
 HTTPS SERVER */
 
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/index.html");
-});
-app.get("/login", function(req, res) {
-  res.sendFile(__dirname + "/login.html");
-});
-
 app.listen(3000, () => console.log("App open on port 3000"));
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(
@@ -55,6 +41,12 @@ app.use(
     saveUninitialized: true
   })
 );
+app.get("/", function(req, res) {
+  res.sendFile(__dirname + "/index.html");
+});
+app.get("/login", function(req, res) {
+  res.sendFile(__dirname + "/public/login.html");
+});
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
 const oauth2 = simpleOauthModule.create({
   client: {
@@ -86,6 +78,46 @@ app.get("/callback", (req, res) => {
   const options = {
     code
   };
+  function SQLVerify(ID) {
+    return new Promise(function(fulfill, reject) {
+      var sql = "SELECT Name FROM mentorsdb WHERE GithubID='" + ID + "'";
+      console.log(sql);
+
+      connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log(result.length);
+        console.log(result[0].Name);
+        fulfill(result);
+      });
+    });
+  }
+  function ActualSQLVerify(ID) {
+    var allowed = false;
+
+    return new Promise(function(fulfill, reject) {
+      var sql =
+        "SELECT COUNT(*) AS verify FROM mentorsdb WHERE GithubID='" + ID + "'";
+      console.log(sql);
+
+      connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log(result[0].verify);
+        if (result[0].verify == 1) {
+          console.log("Yeet");
+          allowed = true;
+          fulfill(allowed);
+        } else if (result[0].verify == 0) {
+          console.log("Nop");
+          allowed = false;
+          fulfill(allowed);
+        } else {
+          console / log("INVALID NUMBER PASSED, DO NOTHING DARN HECKER");
+          allowed = false;
+          fulfill(allowed);
+        }
+      });
+    });
+  }
 
   oauth2.authorizationCode.getToken(options, (error, result) => {
     if (error) {
@@ -110,20 +142,34 @@ app.get("/callback", (req, res) => {
       var Parsed = JSON.parse(response.body);
       var ParsedID = Parsed["id"];
       console.log(Parsed["id"]);
+
+      var go = ActualSQLVerify(ParsedID);
+      go.then(function(result) {
+        if (result == true) {
+          console.log("Valid ID Passed!");
+          req.session.GithubID = ParsedID;
+          req.session.Authorized = true;
+          //   req.session.name = SQLVerify(ParsedID)
+          return res.redirect("../success");
+        } else if (result == false) {
+          console.log("Not Authorized Login Attempt");
+          return res.redirect("/login");
+        }
+      });
       /*THE AUTH PLAN: BY ADAM
 STEP 1: GET THE USERID OF THE GITHUB ACCOUNT USING THE OAUTH TOKEN
 STEP 2: COMPARE THE USERID TOKEN TO A MYSQL LIST OF TOKEN
   IF THE TOKEN EXISTS, LOGIN, IF NOT, MAKE AN ACCOUNT
 STEP 3: SETUP RESTRICTIONS
 STEP 4: DONE */
-      if (ParsedID == "29166546") {
-        console.log("GOTCHU FAM, TIME TO AUTH YOU IN YO");
+      /*  if (ParsedID == "29166546") {
+        console.log("Valid ID Passed!");
         req.session.GithubID = ParsedID;
         req.session.Authorized = true;
         return res.redirect("../success");
       } else {
         return res.redirect("../login");
-      }
+      } */
     });
     const token = oauth2.accessToken.create(result);
     // return res.status(200).json(token);
@@ -167,15 +213,3 @@ function auth(req, res, next) {
 }
 
 //SQL COMMANDS: WILL MOVE TO A DIFFERENT FILE LATER
-function startSequlizeConnection() {
-  sequelize
-    .authenticate()
-    .then(() => {
-      console.log("Sequlize Connection Established (YAY!)");
-    })
-    .catch(err => {
-      console.error(
-        "Unable to connect to the Database, server threw Error: " + err
-      );
-    });
-}
