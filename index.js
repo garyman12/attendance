@@ -179,8 +179,8 @@ app.get("/login", function(req, res) {
 });
 
 function sequelizeTestVerify(ID) {
-  var allowed;
-  return new Promise(function(fulfill, reject){
+  var allowed = [];
+  return new Promise(function(fulfill, reject) {
     console.log(ID);
     var parsed;
     person
@@ -189,29 +189,28 @@ function sequelizeTestVerify(ID) {
         attributes: [["role", "UserRank"]]
       })
       .spread(user => {
-        if(user === undefined){
+        if (user === undefined) {
           console.log("User Not Found in Database, Destroying Session");
-          allowed = false;
+          allowed.push(false);
           fulfill(allowed);
-
-        }else{
-        parsed = user.get({
-          plain: true
-        });
-        console.log(parsed);
-        console.log(Number(parsed["UserRank"]));
-        if(Number(parsed["UserRank"] > 0 ) ){
-          console.log("Yeet");
-          allowed = true;
-          fulfill(allowed);
-        }else{
-          console.log("Nop");
-          allowed = false;
-          fulfill(allowed);
+        } else {
+          parsed = user.get({
+            plain: true
+          });
+          console.log(parsed);
+          console.log(Number(parsed["UserRank"]));
+          if (Number(parsed["UserRank"] > 0)) {
+            console.log("Yeet");
+            allowed.push(true);
+            allowed.push(Number(parsed["UserRank"]))
+            fulfill(allowed);
+          } else {
+            console.log("Nop");
+            allowed.push(false);
+            fulfill(allowed);
+          }
         }
-      }
       });
-
   });
 }
 app.get("/signup", function(req, res) {
@@ -348,14 +347,15 @@ app.get("/callback", (req, res) => {
       var ParsedID = Parsed["id"];
       console.log(Parsed["id"]);
 
-sequelizeTestVerify(ParsedID).then(function(result) {
-        if (result == true) {
+      sequelizeTestVerify(ParsedID).then(function(result) {
+        if (result[0] == true) {
           console.log("Valid ID Passed!");
           req.session.GithubID = ParsedID;
           req.session.Authorized = true;
+          req.session.Rank = result[1];
           //   req.session.name = SQLVerify(ParsedID)
           return res.redirect("../success");
-        } else if (result == false) {
+        } else if (result[0] == false) {
           console.log("Not Authorized Login Attempt");
           return res.redirect("/login");
         }
@@ -388,7 +388,8 @@ app.get("/success", (req, res) => {
 app.get("/authTest", auth, (req, res) => {
   res.send("U in boy");
 });
-app.get("/AdminDashboard", auth, (req, res) => {
+app.get("/AdminDashboard", auth,(req, res) => {
+  console.log(req.session.Rank);
   res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
 });
 
@@ -406,7 +407,7 @@ function genEventCode() {
   );
 }
 
-function auth(requiredRankd, req, res, next) {
+function auth(req, res, next) {
   console.log(req.session.Authorized);
   if (req.session && req.session.Authorized == true) {
     console.log("Authorized:" + req.session.GithubID);
@@ -416,4 +417,3 @@ function auth(requiredRankd, req, res, next) {
   }
 }
 
-//SQL COMMANDS: WILL MOVE TO A DIFFERENT FILE LATER
