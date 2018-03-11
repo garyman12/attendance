@@ -158,24 +158,6 @@ app.get("/", function(req, res) {
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
-  person
-    .findOrCreate({
-      where: {
-        fullname: "Adam Kuhn",
-        role: "4",
-        email: "Adamku19@mybedford.us",
-        slack_id: "NA",
-        github_id: "16625600"
-      }
-    })
-    .spread((user, created) => {
-      console.log(
-        user.get({
-          plain: true
-        })
-      );
-      console.log(created);
-    });
 });
 
 function sequelizeTestVerify(ID) {
@@ -186,7 +168,7 @@ function sequelizeTestVerify(ID) {
     person
       .findAll({
         where: { github_id: ID },
-        attributes: [["role", "UserRank"]]
+        attributes: [["role", "UserRank"], ["fullname", "UserName"]]
       })
       .spread(user => {
         if (user === undefined) {
@@ -202,7 +184,8 @@ function sequelizeTestVerify(ID) {
           if (Number(parsed["UserRank"] > 0)) {
             console.log("Yeet");
             allowed.push(true);
-            allowed.push(Number(parsed["UserRank"]))
+            allowed.push(Number(parsed["UserRank"]));
+            allowed.push(parsed["UserName"]);
             fulfill(allowed);
           } else {
             console.log("Nop");
@@ -353,6 +336,7 @@ app.get("/callback", (req, res) => {
           req.session.GithubID = ParsedID;
           req.session.Authorized = true;
           req.session.Rank = result[1];
+          req.session.User = result[2];
           //   req.session.name = SQLVerify(ParsedID)
           return res.redirect("../success");
         } else if (result[0] == false) {
@@ -388,9 +372,14 @@ app.get("/success", (req, res) => {
 app.get("/authTest", auth, (req, res) => {
   res.send("U in boy");
 });
-app.get("/AdminDashboard", auth,(req, res) => {
-  console.log(req.session.Rank);
+app.get("/AdminDashboard", auth, (req, res) => {
+  console.log(req.session.User);
+  if(req.session.Rank != 4){
+    console.log("User: " + req.session.User + " Tried to access Adminpage with Rank: " + req.session.Rank);
+    res.status(401).send("Sorry " + req.session.User + ", you are not authorized to access this webpage, if you believe this is an error, please contact your local Dojo Organizer");
+  }else{
   res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
+  }
 });
 
 //Generate event code.
