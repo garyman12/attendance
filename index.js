@@ -259,52 +259,13 @@ app.get("/auth", (req, res) => {
   res.redirect(authorizationUri);
 });
 
-// Callback service parsing the authorization token and asking for the access token
+
 app.get("/callback", (req, res) => {
   const code = req.query.code;
   const options = {
     code
   };
-  function SQLVerify(ID) {
-    return new Promise(function(fulfill, reject) {
-      var sql = "SELECT Name FROM mentorsdb WHERE GithubID='" + ID + "'";
-      console.log(sql);
-
-      connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log(result.length);
-        console.log(result[0].Name);
-        fulfill(result);
-      });
-    });
-  }
-  function ActualSQLVerify(ID) {
-    var allowed = false;
-
-    return new Promise(function(fulfill, reject) {
-      var sql =
-        "SELECT COUNT(*) AS verify FROM mentorsdb WHERE GithubID='" + ID + "'";
-      console.log(sql);
-
-      connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log(result[0].verify);
-        if (result[0].verify == 1) {
-          console.log("Yeet");
-          allowed = true;
-          fulfill(allowed);
-        } else if (result[0].verify == 0) {
-          console.log("Nop");
-          allowed = false;
-          fulfill(allowed);
-        } else {
-          console / log("INVALID NUMBER PASSED, DO NOTHING DARN HECKER");
-          allowed = false;
-          fulfill(allowed);
-        }
-      });
-    });
-  }
+ 
 
   oauth2.authorizationCode.getToken(options, (error, result) => {
     if (error) {
@@ -337,7 +298,6 @@ app.get("/callback", (req, res) => {
           req.session.Authorized = true;
           req.session.Rank = result[1];
           req.session.User = result[2];
-          //   req.session.name = SQLVerify(ParsedID)
           return res.redirect("../success");
         } else if (result[0] == false) {
           console.log("Not Authorized Login Attempt");
@@ -406,3 +366,48 @@ function auth(req, res, next) {
   }
 }
 
+/* Legacy SQL Functions
+
+function ActualSQLVerify(ID) {
+  var allowed = false;
+
+  return new Promise(function(fulfill, reject) {
+    var sql =
+      "SELECT COUNT(*) AS verify FROM mentorsdb WHERE GithubID='" + ID + "'";
+    console.log(sql);
+
+    connection.query(sql, function(err, result) {
+      if (err) throw err;
+      console.log(result[0].verify);
+      if (result[0].verify == 1) {
+        console.log("Yeet");
+        allowed = true;
+        fulfill(allowed);
+      } else if (result[0].verify == 0) {
+        console.log("Nop");
+        allowed = false;
+        fulfill(allowed);
+      } else {
+        console / log("INVALID NUMBER PASSED, DO NOTHING DARN HECKER");
+        allowed = false;
+        fulfill(allowed);
+      }
+    });
+  });
+}
+
+ function SQLVerify(ID) {
+    return new Promise(function(fulfill, reject) {
+      var sql = "SELECT Name FROM mentorsdb WHERE GithubID='" + ID + "'";
+      console.log(sql);
+
+      connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log(result.length);
+        console.log(result[0].Name);
+        fulfill(result);
+      });
+    });
+  }
+
+*/
