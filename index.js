@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "attendance",
+  "actualat",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -30,11 +30,11 @@ const sequelize = new Sequelize(
 
 var attendance = sequelize.define("attendance", {
   person_id: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   dojo_id: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   date: {
@@ -44,81 +44,81 @@ var attendance = sequelize.define("attendance", {
 });
 var dojo_person_xref = sequelize.define("dojo_person_xref", {
   dojo_id: {
-    type: Sequelize.STRING(16),
+    type: Sequelize.STRING,
     allowNull: true
   },
   person_id: {
-    type: Sequelize.STRING(16),
+    type: Sequelize.STRING,
     allowNull: true
   },
   is_primary: {
-    type: Sequelize.CHAR(1),
+    type: Sequelize.CHAR,
     allowNull: true
   }
 });
 var dojo = sequelize.define("dojo", {
   name: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   street_address: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   city: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   state: {
-    type: Sequelize.CHAR(2),
+    type: Sequelize.CHAR,
     allowNull: true
   },
   zip: {
-    type: Sequelize.CHAR(5),
+    type: Sequelize.CHAR,
     allowNull: true
   }
 });
 var guardian_xref = sequelize.define("guardian_xref", {
   person1: {
-    type: Sequelize.STRING(16),
+    type: Sequelize.STRING,
     allowNull: true
   },
   person2: {
-    type: Sequelize.STRING(16),
+    type: Sequelize.STRING,
     allowNull: true
   },
   relationship_id: {
-    type: Sequelize.STRING(16),
+    type: Sequelize.STRING,
     allowNull: true
   }
 });
 var person = sequelize.define("person", {
   fullname: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true,
     defaultValue: ""
   },
   role: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   email: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   },
   slack_id: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: false,
     defaultValue: ""
   },
   github_id: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING,
     allowNull: true
   }
 });
 var relationship = sequelize.define("relationship", {
   description: {
-    type: Sequelize.STRING(64),
+    type: Sequelize.STRING,
     allowNull: true
   }
 });
@@ -158,23 +158,71 @@ app.get("/", function(req, res) {
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
+  person
+    .findOrCreate({
+      where: {
+        fullname: "Adam Kuhn",
+        role: "4",
+        email: "Adamku19@mybedford.us",
+        slack_id: "NA",
+        github_id: "16625600"
+      }
+    })
+    .spread((user, created) => {
+      console.log(
+        user.get({
+          plain: true
+        })
+      );
+      console.log(created);
+    });
 });
+
+function sequelizeTestVerify(ID) {
+  var allowed;
+  return new Promise(function(fulfill, reject){
+    console.log(ID);
+    var parsed;
+    person
+      .findAll({
+        where: { github_id: ID },
+        attributes: [["role", "UserRank"]]
+      })
+      .spread(user => {
+        if(user === undefined){
+          console.log("User Not Found in Database, Destroying Session");
+          allowed = false;
+          fulfill(allowed);
+
+        }else{
+        parsed = user.get({
+          plain: true
+        });
+        console.log(parsed);
+        console.log(Number(parsed["UserRank"]));
+        if(Number(parsed["UserRank"] > 0 ) ){
+          console.log("Yeet");
+          allowed = true;
+          fulfill(allowed);
+        }else{
+          console.log("Nop");
+          allowed = false;
+          fulfill(allowed);
+        }
+      }
+      });
+
+  });
+}
 app.get("/signup", function(req, res) {
   res.sendFile(__dirname + "/public/makeuser.html");
+  sequelizeTestVerify("16625600");
 });
 
 // Form Input
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-app.use(function(req, res) {
-  var info = JSON.parse(JSON.stringify(req.body, null, 2));
-  console.log(JSON.stringify(req.body, null, 2));
-  createPerson(info);
-});
-
-person.destroy({ where: { fullname: "" } });
 
 // Creating user data and pushing to database
 function createPerson(info) {
@@ -224,7 +272,6 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
   state: process.env.STATESTRING
 });
 
-// Initial page redirecting to Github
 app.get("/auth", (req, res) => {
   console.log(authorizationUri);
   res.redirect(authorizationUri);
@@ -301,8 +348,7 @@ app.get("/callback", (req, res) => {
       var ParsedID = Parsed["id"];
       console.log(Parsed["id"]);
 
-      var go = ActualSQLVerify(ParsedID);
-      go.then(function(result) {
+sequelizeTestVerify(ParsedID).then(function(result) {
         if (result == true) {
           console.log("Valid ID Passed!");
           req.session.GithubID = ParsedID;
@@ -360,7 +406,7 @@ function genEventCode() {
   );
 }
 
-function auth(req, res, next) {
+function auth(requiredRankd, req, res, next) {
   console.log(req.session.Authorized);
   if (req.session && req.session.Authorized == true) {
     console.log("Authorized:" + req.session.GithubID);
