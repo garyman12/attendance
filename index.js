@@ -164,14 +164,24 @@ app.get("/", function(req, res) {
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
   person
-  .findOrCreate({where: {fullname: "Adam Kuhn", role: "4", email: "adamku19@mybedford.us", slack_id: "N/A", github_id: "16625600", Ranking: "Ninja"}})
-  .spread((user, created) => {
-    console.log(user.get({
-      plain: true
-    }));
-    console.log(created);
-
-  });
+    .findOrCreate({
+      where: {
+        fullname: "Adam Kuhn",
+        role: "Ninja",
+        rank: "4",
+        email: "adamku19@mybedford.us",
+        slack_id: "N/A",
+        github_id: "16625600"
+      }
+    })
+    .spread((user, created) => {
+      console.log(
+        user.get({
+          plain: true
+        })
+      );
+      console.log(created);
+    });
 });
 
 function sequelizeTestVerify(ID) {
@@ -182,7 +192,7 @@ function sequelizeTestVerify(ID) {
     person
       .findAll({
         where: { github_id: ID },
-        attributes: [["role", "UserRank"], ["fullname", "UserName"]]
+        attributes: [["rank", "UserRank"], ["fullname", "UserName"]]
       })
       .spread(user => {
         if (user === undefined) {
@@ -219,13 +229,12 @@ app.get("/signup", function(req, res) {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(function(req, res) {
+/*app.use(function(req, res) {
   person.destroy({ where: { fullname: "" } });
   var info = JSON.parse(JSON.stringify(req.body, null, 2));
-    createPerson(info);
-   });
-   
-
+  createPerson(info);
+});
+*/
 function getRank(info) {
   if (info.role == "ninja" || info.role == "guardian") {
     return "1";
