@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "actualat",
+  "coderdojo",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -114,7 +114,12 @@ var person = sequelize.define("person", {
   github_id: {
     type: Sequelize.STRING,
     allowNull: true
-  }
+  },
+  access: {
+    type: Sequelize.CHAR,
+    allowNull: false,
+    defaultValue: "1"
+  },
 });
 var relationship = sequelize.define("relationship", {
   description: {
@@ -201,10 +206,20 @@ app.get("/signup", function(req, res) {
   sequelizeTestVerify("16625600");
 });
 
+
 // Form Input
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use(function(req, res) {
+  var info = JSON.parse(JSON.stringify(req.body, null, 2));
+  if(info.fullname != ""){
+    createPerson(info);
+  }
+   });
+   
+  person.destroy({ where: { fullname: "" } });
 
 // Creating user data and pushing to database
 function createPerson(info) {
