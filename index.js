@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "actualat",
+  "coderdojo",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -219,11 +219,17 @@ app.get("/signup", function(req, res) {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(function(req, res) {
-  person.destroy({ where: { fullname: "" } });
+app.post('/signup', function(req, res){
   var info = JSON.parse(JSON.stringify(req.body, null, 2));
+  if(info.fullname == ""){
+    res.send("Failed to create user");
+    person.destroy({ where: { fullname: "" } });
+  }
+  else{
     createPerson(info);
-   });
+    res.send("Successfully created user");
+  }
+});
    
 
 function getRank(info) {
