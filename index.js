@@ -102,6 +102,11 @@ var person = sequelize.define("person", {
     type: Sequelize.STRING,
     allowNull: true
   },
+  rank: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: "1"
+  },
   email: {
     type: Sequelize.STRING,
     allowNull: true
@@ -114,12 +119,7 @@ var person = sequelize.define("person", {
   github_id: {
     type: Sequelize.STRING,
     allowNull: true
-  },
-  access: {
-    type: Sequelize.CHAR,
-    allowNull: false,
-    defaultValue: "1"
-  },
+  }
 });
 var relationship = sequelize.define("relationship", {
   description: {
@@ -206,36 +206,47 @@ app.get("/signup", function(req, res) {
   sequelizeTestVerify("16625600");
 });
 
-
 // Form Input
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(function(req, res) {
+  person.destroy({ where: { fullname: "" } });
   var info = JSON.parse(JSON.stringify(req.body, null, 2));
-  if(info.fullname != ""){
     createPerson(info);
-  }
    });
    
-  person.destroy({ where: { fullname: "" } });
+
+function getRank(info) {
+  if (info.role == "ninja" || info.role == "guardian") {
+    return "1";
+  } else if (info.role == "mentor") {
+    return "2";
+  } else if (info.role == "organizer") {
+    return "3";
+  } else if (info.role == "founder") {
+    return "4";
+  }
+}
 
 // Creating user data and pushing to database
 function createPerson(info) {
-  person
-    .findOrCreate({
-      where: { github_id: info.github_id },
-      defaults: {
-        fullname: info.fullname,
-        role: info.role,
-        email: info.email,
-        slack_id: info.slack_id,
-        github_id: info.github_id
-      }
-    })
-    .spread((user, created) => {
-      console.log(
+  if (info.fullname != "") {
+    person
+      .findOrCreate({
+        where: { github_id: info.github_id },
+        defaults: {
+          fullname: info.fullname,
+          role: info.role,
+          rank: getRank(info),
+          email: info.email,
+          slack_id: info.slack_id,
+          github_id: info.github_id
+        }
+      })
+      .spread((user, created) => {
+        /*console.log(
         "Found/Created person with full name: " +
           info.fullname +
           ", role: " +
@@ -246,8 +257,9 @@ function createPerson(info) {
           info.slack_id +
           ", and Github Id: " +
           info.github_id
-      );
-    });
+      ); */
+      });
+  }
 }
 
 //ADAM'S OAUTH2 STUFF, DO NOT TOUCH!
@@ -274,13 +286,11 @@ app.get("/auth", (req, res) => {
   res.redirect(authorizationUri);
 });
 
-
 app.get("/callback", (req, res) => {
   const code = req.query.code;
   const options = {
     code
   };
- 
 
   oauth2.authorizationCode.getToken(options, (error, result) => {
     if (error) {
@@ -349,11 +359,22 @@ app.get("/authTest", auth, (req, res) => {
 });
 app.get("/AdminDashboard", auth, (req, res) => {
   console.log(req.session.User);
-  if(req.session.Rank != 4){
-    console.log("User: " + req.session.User + " Tried to access Adminpage with Rank: " + req.session.Rank);
-    res.status(401).send("Sorry " + req.session.User + ", you are not authorized to access this webpage, if you believe this is an error, please contact your local Dojo Organizer");
-  }else{
-  res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
+  if (req.session.Rank != 4) {
+    console.log(
+      "User: " +
+        req.session.User +
+        " Tried to access Adminpage with Rank: " +
+        req.session.Rank
+    );
+    res
+      .status(401)
+      .send(
+        "Sorry " +
+          req.session.User +
+          ", you are not authorized to access this webpage, if you believe this is an error, please contact your local Dojo Organizer"
+      );
+  } else {
+    res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
   }
 });
 
