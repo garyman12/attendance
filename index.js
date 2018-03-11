@@ -237,7 +237,7 @@ app.post('/signup', function(req, res){
   }
   else{
     createPerson(info);
-    res.send("Successfully created user");
+    res.send("Successfully created user " + info.fullname + "!");
   }
 });
    
