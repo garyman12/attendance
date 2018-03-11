@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "coderdojo",
+  "actualat",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -115,11 +115,11 @@ var person = sequelize.define("person", {
     type: Sequelize.STRING,
     allowNull: true
   },
-  access: {
-    type: Sequelize.CHAR,
+  Ranking: {
+    type: Sequelize.STRING,
     allowNull: false,
-    defaultValue: "1"
-  },
+    defaultValue: "Ninja"
+  }
 });
 var relationship = sequelize.define("relationship", {
   description: {
@@ -163,6 +163,15 @@ app.get("/", function(req, res) {
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
+  person
+  .findOrCreate({where: {fullname: "Adam Kuhn", role: "4", email: "adamku19@mybedford.us", slack_id: "N/A", github_id: "16625600", Ranking: "Ninja"}})
+  .spread((user, created) => {
+    console.log(user.get({
+      plain: true
+    }));
+    console.log(created);
+
+  });
 });
 
 function sequelizeTestVerify(ID) {
@@ -203,23 +212,22 @@ function sequelizeTestVerify(ID) {
 }
 app.get("/signup", function(req, res) {
   res.sendFile(__dirname + "/public/makeuser.html");
-  sequelizeTestVerify("16625600");
 });
-
 
 // Form Input
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(function(req, res) {
+/*app.use(function(req, res) {
   var info = JSON.parse(JSON.stringify(req.body, null, 2));
-  if(info.fullname != ""){
+  if (info.fullname != "") {
     createPerson(info);
   }
-   });
-   
-  person.destroy({ where: { fullname: "" } });
+});
+*/
+
+person.destroy({ where: { fullname: "" } });
 
 // Creating user data and pushing to database
 function createPerson(info) {
@@ -274,20 +282,17 @@ app.get("/auth", (req, res) => {
   res.redirect(authorizationUri);
 });
 
-
 app.get("/callback", (req, res) => {
   const code = req.query.code;
   const options = {
     code
   };
- 
 
   oauth2.authorizationCode.getToken(options, (error, result) => {
     if (error) {
       console.error("Access Token Error", error.message);
       return res.json("Authentication failed");
     }
-    console.log(result);
 
     console.log(result["access_token"]);
     var RequestString = "https://api.github.com/user"; // + result["access_token"];
@@ -349,11 +354,22 @@ app.get("/authTest", auth, (req, res) => {
 });
 app.get("/AdminDashboard", auth, (req, res) => {
   console.log(req.session.User);
-  if(req.session.Rank != 4){
-    console.log("User: " + req.session.User + " Tried to access Adminpage with Rank: " + req.session.Rank);
-    res.status(401).send("Sorry " + req.session.User + ", you are not authorized to access this webpage, if you believe this is an error, please contact your local Dojo Organizer");
-  }else{
-  res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
+  if (req.session.Rank != 4) {
+    console.log(
+      "User: " +
+        req.session.User +
+        " Tried to access Adminpage with Rank: " +
+        req.session.Rank
+    );
+    res
+      .status(401)
+      .send(
+        "Sorry " +
+          req.session.User +
+          ", you are not authorized to access this webpage, if you believe this is an error, please contact your local Dojo Organizer"
+      );
+  } else {
+    res.sendFile(__dirname + "/Admin-dashboard/analytics.html");
   }
 });
 
