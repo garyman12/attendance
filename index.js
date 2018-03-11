@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "coderdojo",
+  "actualat",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
@@ -163,6 +163,15 @@ app.get("/", function(req, res) {
 });
 app.get("/login", function(req, res) {
   res.sendFile(__dirname + "/public/login.html");
+  person
+  .findOrCreate({where: {fullname: "Adam Kuhn", role: "4", email: "adamku19@mybedford.us", slack_id: "N/A", github_id: "16625600", Ranking: "Ninja"}})
+  .spread((user, created) => {
+    console.log(user.get({
+      plain: true
+    }));
+    console.log(created);
+
+  });
 });
 
 function sequelizeTestVerify(ID) {
@@ -203,7 +212,6 @@ function sequelizeTestVerify(ID) {
 }
 app.get("/signup", function(req, res) {
   res.sendFile(__dirname + "/public/makeuser.html");
-  sequelizeTestVerify("16625600");
 });
 
 // Form Input
@@ -297,7 +305,6 @@ app.get("/callback", (req, res) => {
       console.error("Access Token Error", error.message);
       return res.json("Authentication failed");
     }
-    console.log(result);
 
     console.log(result["access_token"]);
     var RequestString = "https://api.github.com/user"; // + result["access_token"];
