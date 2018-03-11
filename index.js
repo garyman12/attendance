@@ -11,7 +11,7 @@ var request = require("request");
 var session = require("express-session");
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(
-  "coderdojo",
+  "attendance",
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
